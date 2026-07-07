@@ -1,1 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Site Asset Importer</title>
 
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --soft: #f9fafb;
+      --blue: #18a0fb;
+      --blue-dark: #0d8de3;
+      --green: #16a34a;
+      --red: #dc2626;
+      --yellow: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      font-size: 12px;
+    }
+
+    .app {
+      padding: 16px;
+    }
+
+    header {
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .url-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    input[type="url"],
+    input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 12px;
+      outline: none;
+    }
+
+    input[type="url"]:focus,
+    input[type="text"]:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(24, 160, 251, 0.12);
+    }
+
+    button {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button:hover {
+      background: var(--soft);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+
+    .primary:hover {
+      background: var(--blue-dark);
+    }
+
+    .helper {
+      color: var(--muted);
+      line-height: 1.4;
+      margin: 0 0 10px;
+    }
+
+    .status {
+      margin: 10px 0 14px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      background: var(--soft);
+      border-radius: 8px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .status.success {
+      border-color: rgba(22, 163, 74, 0.25);
+      background: rgba(22, 163, 74, 0.08);
+      color: var(--green);
+    }
+
+    .status.error {
+      border-color: rgba(220, 38, 38, 0.25);
+      background: rgba(220, 38, 38, 0.08);
+      color: var(--red);
+    }
+
+    .status.busy {
+      border-color: rgba(24, 160, 251, 0.25);
+      background: rgba(24, 160, 251, 0.08);
+      color: var(--blue-dark);
+    }
+
+    .section {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .filter-btn {
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+
+    .filter-btn[aria-pressed="true"] {
+      background: #111827;
+      border-color: #111827;
+      color: #ffffff;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .toggles {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      color: var(--muted);
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+    .toggle input {
+      margin: 0;
+    }
+
+    .import-row {
+      margin-bottom: 12px;
+    }
+
+    #importBtn {
+      width: 100%;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      min-height: 80px;
+    }
+
+    .asset-card {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .asset-card.selected {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(24, 160, 251, 0.18);
+    }
+
+    .thumb-wrap {
+      height: 120px;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .thumb-fallback {
+      color: var(--muted);
+      text-align: center;
+      padding: 10px;
+      line-height: 1.4;
+    }
+
+    .thumb-fallback strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .asset-actions {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .asset-actions input {
+      width: 16px;
+      height: 16px;
+    }
+
+    .favorite-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .favorite-btn.active {
+      color: var(--yellow);
+    }
+
+    .meta {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      color: var(--muted);
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
+    .meta strong {
+      color: var(--text);
+    }
+
+    .source-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .source-link {
+      color: var(--blue-dark);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .copy-link {
+      padding: 4px 6px;
+      font-size: 10px;
+    }
+
+    .favorites-list {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .favorite-item {
+      width: 70px;
+      min-width: 70px;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .favorite-item img {
+      width: 54px;
+      height: 44px;
+      object-fit: contain;
+      background: #f3f4f6;
+      border-radius: 6px;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 14px;
+      color: var(--muted);
+      background: var(--soft);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .fine-print {
+      color: var(--muted);
+      line-height: 1.4;
+      margin-top: 12px;
+      font-size: 11px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header>
+      <h1>Site Asset Importer</h1>
+      <p class="subtitle">Pull visual assets from public websites into Figma.</p>
+    </header>
+
+    <section>
+      <label for="urlInput">Website or direct image URL</label>
+
+      <div class="url-row">
+        <input
+          id="urlInput"
+          type="url"
+          placeholder="https://example.com or direct image URL"
+          autocomplete="off"
+        />
+        <button id="extractBtn" class="primary" type="button">Extract Assets</button>
+      </div>
+
+      <p class="helper">
+        Paste a public website URL or direct image URL to extract images, icons, SVGs, logos,
+        WEBP, AVIF, and CDN image URLs.
+      </p>
+
+      <p class="helper">
+        Best available quality is used by default. Some modern image formats may be converted
+        before placement in Figma.
+      </p>
+
+      <div id="status" class="status">Paste a URL to begin.</div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Format</h2>
+      </div>
+
+      <div class="filters">
+        <button class="filter-btn" type="button" data-format="all" aria-pressed="true">All</button>
+        <button class="filter-btn" type="button" data-format="svg" aria-pressed="false">SVG</button>
+        <button class="filter-btn" type="button" data-format="png" aria-pressed="false">PNG</button>
+        <button class="filter-btn" type="button" data-format="jpg" aria-pressed="false">JPG</button>
+        <button class="filter-btn" type="button" data-format="webp" aria-pressed="false">WEBP</button>
+        <button class="filter-btn" type="button" data-format="gif" aria-pressed="false">GIF</button>
+        <button class="filter-btn" type="button" data-format="avif" aria-pressed="false">AVIF</button>
+      </div>
+
+      <div class="actions-row">
+        <button id="selectAllBtn" type="button">Select Visible</button>
+        <button id="deselectAllBtn" type="button">Deselect All</button>
+      </div>
+
+      <div class="toggles">
+        <label class="toggle">
+          <input id="hideTinyToggle" type="checkbox" checked />
+          Hide tiny
+        </label>
+
+        <label class="toggle">
+          <input id="hideUnavailableToggle" type="checkbox" />
+          Hide unavailable
+        </label>
+      </div>
+
+      <div class="import-row">
+        <button id="importBtn" class="primary" type="button" disabled>Import Selected</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Favorites</h2>
+      </div>
+
+      <div id="favoritesList" class="favorites-list">
+        <div class="empty">No favorites yet.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Images</h2>
+        <span id="resultCount" class="count">0 found</span>
+      </div>
+
+      <div id="imageGrid" class="grid">
+        <div class="empty">Extracted assets will appear here.</div>
+      </div>
+    </section>
+
+    <p class="fine-print">
+      Only use assets you have rights or permission to use. Some sites may block extraction,
+      hotlinking, or protected images.
+    </p>
+  </main>
+
+  <script src="ui.js"></script>
+</body>
+</html>
