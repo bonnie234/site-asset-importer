@@ -1,6 +1,6 @@
 // Site Asset Importer — UI logic
 // Replace this after Render is set up.
-const BACKEND_URL = 'https://YOUR-RENDER-URL.onrender.com';
+const BACKEND_URL = 'https://site-asset-importer.onrender.com';
 
 const state = {
   assets: [],
