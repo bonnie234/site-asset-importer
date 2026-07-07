@@ -1,5 +1,5 @@
 // Site Asset Importer — UI logic
-// Replace this after Render is set up.
+
 const BACKEND_URL = 'https://site-asset-importer.onrender.com';
 
 const state = {
@@ -28,7 +28,13 @@ const els = {
   favoritesList: document.getElementById('favoritesList')
 };
 
+function missingElements() {
+  return Object.keys(els).filter((key) => !els[key]);
+}
+
 function setStatus(message, type) {
+  if (!els.status) return;
+
   els.status.textContent = message || '';
   els.status.className = 'status';
 
@@ -112,7 +118,9 @@ function escapeHtml(value) {
 
 function truncate(value, max) {
   const text = String(value || '');
+
   if (text.length <= max) return text;
+
   return `${text.slice(0, max - 1)}…`;
 }
 
@@ -132,9 +140,11 @@ function saveFavorites() {
 function loadFavorites() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+
     if (!raw) return;
 
     const parsed = JSON.parse(raw);
+
     if (Array.isArray(parsed)) {
       state.favorites = parsed;
     }
@@ -166,6 +176,8 @@ function toggleFavorite(asset) {
 }
 
 function renderFavorites() {
+  if (!els.favoritesList) return;
+
   if (!state.favorites.length) {
     els.favoritesList.innerHTML = '<div class="empty">No favorites yet.</div>';
     return;
@@ -198,6 +210,8 @@ function renderFavorites() {
 }
 
 function renderAssets() {
+  if (!els.imageGrid || !els.resultCount || !els.importBtn) return;
+
   const assets = visibleAssets();
 
   els.resultCount.textContent = `${assets.length} found`;
@@ -271,6 +285,7 @@ function renderAssets() {
 
   els.imageGrid.querySelectorAll('.asset-card').forEach((card) => {
     const key = card.getAttribute('data-key');
+
     const asset = assets.find((item) => {
       const itemKey = getOriginalUrl(item) || getAssetUrl(item);
       return itemKey === key;
@@ -282,37 +297,45 @@ function renderAssets() {
     const favorite = card.querySelector('[data-action="favorite"]');
     const copy = card.querySelector('[data-action="copy"]');
 
-    select.addEventListener('change', () => {
-      if (select.checked) {
-        state.selected.add(key);
-      } else {
-        state.selected.delete(key);
-      }
+    if (select) {
+      select.addEventListener('change', () => {
+        if (select.checked) {
+          state.selected.add(key);
+        } else {
+          state.selected.delete(key);
+        }
 
-      renderAssets();
-      updateImportButton();
-    });
+        renderAssets();
+        updateImportButton();
+      });
+    }
 
-    favorite.addEventListener('click', () => {
-      toggleFavorite(asset);
-    });
+    if (favorite) {
+      favorite.addEventListener('click', () => {
+        toggleFavorite(asset);
+      });
+    }
 
-    copy.addEventListener('click', async () => {
-      const originalUrl = getOriginalUrl(asset);
+    if (copy) {
+      copy.addEventListener('click', async () => {
+        const originalUrl = getOriginalUrl(asset);
 
-      try {
-        await navigator.clipboard.writeText(originalUrl);
-        setStatus('Source URL copied.', 'success');
-      } catch (err) {
-        setStatus('Could not copy URL. Open the source link instead.', 'error');
-      }
-    });
+        try {
+          await navigator.clipboard.writeText(originalUrl);
+          setStatus('Source URL copied.', 'success');
+        } catch (err) {
+          setStatus('Could not copy URL. Open the source link instead.', 'error');
+        }
+      });
+    }
   });
 
   updateImportButton();
 }
 
 function updateImportButton() {
+  if (!els.importBtn) return;
+
   els.importBtn.disabled = state.selected.size === 0 || state.loading;
   els.importBtn.textContent = state.selected.size
     ? `Import Selected (${state.selected.size})`
@@ -321,8 +344,14 @@ function updateImportButton() {
 
 function setLoading(isLoading) {
   state.loading = isLoading;
-  els.extractBtn.disabled = isLoading;
-  els.importBtn.disabled = isLoading || state.selected.size === 0;
+
+  if (els.extractBtn) {
+    els.extractBtn.disabled = isLoading;
+  }
+
+  if (els.importBtn) {
+    els.importBtn.disabled = isLoading || state.selected.size === 0;
+  }
 }
 
 async function extractAssets() {
@@ -330,11 +359,6 @@ async function extractAssets() {
 
   if (!url) {
     setStatus('Paste a website or direct image URL first.', 'error');
-    return;
-  }
-
-  if (BACKEND_URL.includes('YOUR-RENDER-URL')) {
-    setStatus('Backend URL is not set yet. Replace YOUR-RENDER-URL in ui.js after Render is live.', 'error');
     return;
   }
 
@@ -381,11 +405,11 @@ async function extractAssets() {
 async function fetchAssetAsDataUrl(asset) {
   const source = getAssetUrl(asset);
 
-  const absoluteUrl = source.startsWith('http')
-    ? `${BACKEND_URL}${source}`
-    : source.startsWith('/asset')
-      ? `${BACKEND_URL}${source}`
-      : source;
+  let absoluteUrl = source;
+
+  if (source.startsWith('/asset')) {
+    absoluteUrl = `${BACKEND_URL}${source}`;
+  }
 
   const response = await fetch(absoluteUrl);
 
@@ -484,27 +508,43 @@ function setupFilters() {
 }
 
 function setupEvents() {
-  els.extractBtn.addEventListener('click', extractAssets);
+  if (els.extractBtn) {
+    els.extractBtn.addEventListener('click', extractAssets);
+  }
 
-  els.urlInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      extractAssets();
-    }
-  });
+  if (els.urlInput) {
+    els.urlInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        extractAssets();
+      }
+    });
+  }
 
-  els.selectAllBtn.addEventListener('click', selectVisibleAssets);
-  els.deselectAllBtn.addEventListener('click', deselectAllAssets);
-  els.importBtn.addEventListener('click', importSelected);
+  if (els.selectAllBtn) {
+    els.selectAllBtn.addEventListener('click', selectVisibleAssets);
+  }
 
-  els.hideTinyToggle.addEventListener('change', () => {
-    state.hideTiny = els.hideTinyToggle.checked;
-    renderAssets();
-  });
+  if (els.deselectAllBtn) {
+    els.deselectAllBtn.addEventListener('click', deselectAllAssets);
+  }
 
-  els.hideUnavailableToggle.addEventListener('change', () => {
-    state.hideUnavailable = els.hideUnavailableToggle.checked;
-    renderAssets();
-  });
+  if (els.importBtn) {
+    els.importBtn.addEventListener('click', importSelected);
+  }
+
+  if (els.hideTinyToggle) {
+    els.hideTinyToggle.addEventListener('change', () => {
+      state.hideTiny = els.hideTinyToggle.checked;
+      renderAssets();
+    });
+  }
+
+  if (els.hideUnavailableToggle) {
+    els.hideUnavailableToggle.addEventListener('change', () => {
+      state.hideUnavailable = els.hideUnavailableToggle.checked;
+      renderAssets();
+    });
+  }
 }
 
 window.onmessage = (event) => {
@@ -530,6 +570,14 @@ window.onmessage = (event) => {
 };
 
 function init() {
+  const missing = missingElements();
+
+  if (missing.length) {
+    console.error('Site Asset Importer missing UI elements:', missing);
+    setStatus(`UI error: missing ${missing.join(', ')}`, 'error');
+    return;
+  }
+
   loadFavorites();
 
   state.hideTiny = els.hideTinyToggle.checked;
@@ -539,6 +587,8 @@ function init() {
   setupEvents();
   renderFavorites();
   renderAssets();
+
+  setStatus('Ready. Paste a URL to begin.', 'success');
 
   parent.postMessage(
     {
