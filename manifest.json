@@ -8,10 +8,10 @@
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": [
-      "https://YOUR-RENDER-URL.onrender.com"
+      "https://site-asset-importer.onrender.com"
     ],
     "devAllowedDomains": [
-      "https://YOUR-RENDER-URL.onrender.com",
+      "https://site-asset-importer.onrender.com",
       "http://localhost:8787"
     ],
     "reasoning": "Site Asset Importer sends user-provided public webpage or image URLs to its hosted extraction backend so designers can preview and import public site assets into Figma."
