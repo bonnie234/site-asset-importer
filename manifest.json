@@ -1,1 +1,19 @@
-
+{
+  "name": "Site Asset Importer",
+  "id": "site-asset-importer",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://YOUR-RENDER-URL.onrender.com"
+    ],
+    "devAllowedDomains": [
+      "https://YOUR-RENDER-URL.onrender.com",
+      "http://localhost:8787"
+    ],
+    "reasoning": "Site Asset Importer sends user-provided public webpage or image URLs to its hosted extraction backend so designers can preview and import public site assets into Figma."
+  }
+}
