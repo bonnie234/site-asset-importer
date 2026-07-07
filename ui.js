@@ -1,5 +1,7 @@
 // Site Asset Importer — UI logic
 
+alert('Site Asset Importer ui.js is loading');
+
 const BACKEND_URL = 'https://site-asset-importer.onrender.com';
 
 const state = {
